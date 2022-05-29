@@ -82,8 +82,10 @@ uuid = "e2ed5e7c-b2de-5872-ae92-c73ca462fb04"
 version = "0.1.3"
 
 [[deps.Boolin]]
-deps = ["Combinatorics", "Symbolics"]
-path = "/Users/anand/.julia/dev/Boolin"
+deps = ["Symbolics"]
+git-tree-sha1 = "47fcec0594cf76724eaeeec874c8cf58ee2c3b3c"
+repo-rev = "main"
+repo-url = "https://github.com/anandijain/Boolin.jl"
 uuid = "35dd214e-c2db-4c8c-90c4-e4aaf3ce35bf"
 version = "0.1.0"
 
