@@ -12,6 +12,9 @@ edges(hg)
 add_edge!(hg, [1, 2])
 @test ne(hg) == 4 # multiedges are allowed, unlike in SimpleGraphs
 
+# is there a natural meaning to cartesian product of hypergraphs? 
+# do hypergraphs also get a unique factorization?
+# cartesian_product(hg, hg)
 
 # simp city
 sc = SComplex()
@@ -30,3 +33,14 @@ add_edge!(sc, [1, 2])
 @test rem_edge!(sc, [3, 2, 1])
 @test ne(sc) == 0
 @test sc.v2he == [[], [], []]
+
+n = 3
+hg = Hypergraph(n)
+@test !is_complete(hg) && is_complete(complete!(hg))
+@test ne(hg) == Hypergraphs.n_hyperedges(n)
+
+hgs = all_labeled_hypergraphs(3)
+@test length(hgs) == Hypergraphs.n_hypergraphs(n)
+
+# needs Graphs.Experimental.has_isomorph
+@test_throws MethodError Hypergraphs.all_hypergraphs(3)
