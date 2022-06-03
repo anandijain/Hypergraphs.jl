@@ -3,7 +3,7 @@ abstract type AbstractHypergraph{T<:Integer} <: AbstractGraph{T} end
 abstract type AbstractSimplicialComplex{T} <: AbstractHypergraph{T} end
 
 const AHG = AbstractHypergraph
-const ACS = AbstractSimplicialComplex
+const ASC = AbstractSimplicialComplex
 # const AHE = AbstractHyperEdge
 
 Hyperedge{T} = Vector{T} # makes edges directed (even for AHG)
@@ -73,13 +73,42 @@ function Graphs.add_edge!(hg::AHG, he)
 end
 Graphs.add_edge!(hg::AHG, he::Tuple) = add_edge!(hg, collect(he))
 
+# I want to make this generic to AHG and ASC
+# pretty sure this has a big issue with shifting
+function Graphs.rem_edge!(hg::AHG, e)
+    # new_e_idx = ne(hg) + one(eltype(hg))
+    eid = edge_id(hg, e)
+    eid === nothing && return false
+    # length(eid) > 1 && @warn hg, eid
+    deleteat!(hg.he2v, first(eid))
+    update_old_ids!(hg.v2he, eid)
+    true
+end
+
+function update_old_vids!(vv, to_remove)
+    for xs in vv
+        for x in xs
+            in(to_remove) && delete!(xs, x)
+            # if x > 
+        # filter!(!in(to_remove), xs)
+        end
+    end
+end
+
+
+"fix this part"
+function edge_id(hg::AHG, e)
+    xs = findall(isequal(e), hg.he2v)
+    isempty(xs) ? nothing : xs
+end
+
 # SimpleGraphs makes an assumption on the number of edges and vertices required for a graph to be connected
 function is_connected(g::AHG)
     return length(connected_components(g)) == 1
 end
 
 # simp city
-mutable struct SimplicialComplex{T<:Integer} <: ACS{T}
+mutable struct SimplicialComplex{T<:Integer} <: ASC{T}
     "contains the list of hyperedge indices that include v as a vertex"
     v2he::Vector{Vector{T}}
     "contains the set of vertices in a hyperedge"
@@ -123,7 +152,7 @@ function Graphs.add_edge!(sc::SComplex, he)
         end
 
     end
-    update_old_ids!(sc, to_remove)
+    update_old_ids!(sc.v2he, to_remove)
     e = Set(he)
     sc.he2v[new_e_idx] = e
     for v in e
@@ -132,24 +161,36 @@ function Graphs.add_edge!(sc::SComplex, he)
     true
 end
 
-function Graphs.rem_edge!(sc::SComplex, e)
+function Graphs.rem_edge!(sc::ASC, e)
     # new_e_idx = ne(sc) + one(eltype(sc))
     eid = edge_id(sc, e)
     eid === nothing && return false
     delete!(sc.he2v, eid)
-    update_old_ids!(sc, [eid])
+    update_old_ids!(sc.v2he, [eid])
     true
 end
 
-function update_old_ids!(sc, to_remove)
-    for xs in sc.v2he
+function update_old_ids!(vv, to_remove)
+    for xs in vv
         filter!(!in(to_remove), xs)
         # replace!(xs, to_replace...)
     end
 end
-function edge_id(sc::SComplex, e)
+
+function edge_id(sc::ASC, e)
     for (k, he) in sc.he2v
         e ⊆ he && return k
     end
     nothing
+end
+
+GraphHelpers.is_complete(sc::ASC) = has_edge(sc, vertices(sc))
+
+function Graphs.SimpleDiGraph(hg::AHG)
+    is_simple(hg) || error("provided graph has hyperedges with more than two vertices")
+    g = SimpleDiGraph(nv(hg))
+    for e in edges(hg)
+        add_edge!(g, Tuple(e))
+    end
+    g
 end
