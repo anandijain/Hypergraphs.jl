@@ -28,6 +28,16 @@ function Hypergraph(n::Int)
     hg
 end
 
+function Hypergraph(es)
+    vs = unique(reduce(vcat, es))
+    svs = sort(vs)
+    n = length(svs)
+    @assert (1:n) == svs # vertex labels are contiguous UnitRange
+    hg = Hypergraph(n)
+    add_edges!(hg, es)
+    hg
+end
+
 is_directed(::Type{<:Hypergraph}) = false
 is_directed(g::Hypergraph) = false
 
@@ -54,6 +64,7 @@ function has_edge(hg::AHG, e)
     false
 end
 
+has_edge(hg::AHG, e...) = has_edge(hg, [e])
 # end base graphs interface
 
 Graphs.add_vertex!(hg::AHG) = push!(hg.v2he, eltype(hg)[])
@@ -63,7 +74,8 @@ function Graphs.add_edge!(hg::AHG, he)
     # n_e = ne(hg)
     # all(he.vs <= n_v) || error("out out bounds hyperedge. there are only $n_v vertices")
     # @info he
-    all(he .<= n_v) || return false
+    # disallowing [] as a valid edge 
+    (!isempty(he) && all(he .<= n_v)) || return false
     push!(hg.he2v, he)
     he_idx = ne(hg) # updated with new he
     for v in he

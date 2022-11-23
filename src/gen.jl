@@ -17,7 +17,15 @@ function all_labeled_hypergraphs(n)
     all_labeled_graphs(Hypergraph, n)
 end
 
-"https://oeis.org/A003180"
+"""
+    all_hypergraphs(n)
+
+currently broken because `Graphs.Experimental.has_isomorph(g1::AHG, g2::AHG)` is not defined
+
+https://oeis.org/A000612 <-- this one i think
+
+https://oeis.org/A003180
+"""
 function all_hypergraphs(n)
     all_graphs(Hypergraph, n)
 end
